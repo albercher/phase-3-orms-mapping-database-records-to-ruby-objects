@@ -49,4 +49,44 @@ class Song
     song.save
   end
 
+  def self.new_from_db(row)
+    self.new(id: row[0], name: row[1], album: row[2])
+  end
+
+  def self.all
+    sql = <<-SQL
+      SELECT *
+      FROM songs
+    SQL
+
+    DB[:conn].execute(sql).map { |row| self.new_from_db(row)}
+    # DB variable is stored in environment, then we execute the sql we stored above
+    # This will return an array of rows from the database matching our query
+    # Then iterate over each row using map to createa new ruby object for each row
+  end
+
+  # def self.find_by_name(name)
+  #   sql = <<-SQL
+  #     SELECT *
+  #     FROM songs
+  #     WHERE name = ?
+  #     LIMIT 1
+  #   SQL
+  #   # add ? where we want parameter to be
+
+  #   DB[:conn].execute(sql, name).map { |row| self.new_from_db(row) }
+  #   # add parameter to second argument in execute
+  # end
+  def self.find_by_name(name)
+    sql = <<-SQL
+      SELECT *
+      FROM songs
+      WHERE name = ?
+      LIMIT 1
+    SQL
+
+    DB[:conn].execute(sql, name).map do |row|
+      self.new_from_db(row)
+    end.first
+  end
 end
